@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paraboles &amp; Musique — Prof. Warda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EADB;
+    --panel:#FAF6EC;
+    --stage:#FCF8ED;
+    --ink:#292218;
+    --ink-soft:#6E6455;
+    --line:#DAD1BC;
+    --verm:#C8391A;      /* bouton f(x) */
+    --verm-deep:#B5341A; /* équation f(x) */
+    --outre:#2140B8;     /* bouton f(-x) */
+    --outre-deep:#1F38A6;/* équation f(-x) */
+    --serif:"Fraunces",Georgia,serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font:400 13px/1.5 var(--mono);
+    display:flex;flex-direction:column;
+    overflow:hidden;
+  }
+  /* grain papier très léger */
+  body::after{
+    content:'';position:fixed;inset:0;z-index:70;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:multiply;
+  }
+  sup{font-size:.62em;line-height:0}
+  sub{font-size:.68em;line-height:0}
+
+  /* ---------- barre du haut ---------- */
+  .topbar{
+    flex:none;display:flex;align-items:center;justify-content:space-between;
+    gap:16px;padding:10px 18px;border-bottom:1.5px solid var(--ink);
+  }
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .brand svg{width:36px;height:36px;display:block;flex:none}
+  .brand h1{font:italic 600 21px/1.05 var(--serif);letter-spacing:.01em;white-space:nowrap}
+  .brand h1 em{color:var(--verm)}
+  .brand .sub{display:block;font:400 10.5px var(--mono);color:var(--ink-soft);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top-right{display:flex;align-items:center;gap:10px;flex:none}
+  .iconbtn,.tool{
+    width:34px;height:34px;border:1.5px solid var(--ink);border-radius:9px;
+    background:var(--panel);color:var(--ink);display:grid;place-items:center;
+    cursor:pointer;transition:background .15s,color .15s;
+  }
+  .iconbtn:hover,.tool:hover{background:var(--ink);color:var(--paper)}
+  .iconbtn svg,.tool svg{width:18px;height:18px}
+  #muteBtn .off{display:none}
+  #muteBtn.muted .on{display:none}
+  #muteBtn.muted .off{display:block}
+  .prof{
+    font:italic 600 15px var(--serif);letter-spacing:.02em;
+    background:var(--ink);color:var(--paper);
+    padding:7px 16px;border-radius:999px;white-space:nowrap;
+  }
+
+  /* ---------- corps ---------- */
+  .main{flex:1;min-height:0;display:grid;grid-template-columns:358px 1fr}
+  .panel{
+    border-right:1.5px solid var(--ink);background:var(--panel);
+    overflow-y:auto;padding:20px 22px 30px;
+  }
+  .panel::-webkit-scrollbar{width:9px}
+  .panel::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+  .sec{margin-top:24px}
+  .sec-title{
+    font:600 10.5px var(--mono);text-transform:uppercase;letter-spacing:.18em;
+    color:var(--ink-soft);display:flex;align-items:center;gap:10px;margin-bottom:11px;
+  }
+  .sec-title::after{content:'';flex:1;height:1px;background:var(--line)}
+
+  /* équations en direct */
+  .eq-f{font:500 25px/1.25 var(--serif);color:var(--verm-deep)}
+  .eq-neg{font:500 19px/1.3 var(--serif);color:var(--outre-deep);margin-top:5px}
+  .eq i{font-style:italic}
+  .mirror{font:italic 400 12.5px/1.45 var(--serif);color:var(--ink-soft);margin-top:9px}
+
+  /* coefficients */
+  .coeffs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .coeff{border:1.5px solid var(--ink);border-radius:11px;background:var(--paper);padding:8px 8px 9px;text-align:center}
+  .clab{display:block;font:italic 600 14px var(--serif);color:var(--ink-soft);margin-bottom:2px}
+  .crow{display:flex;align-items:center;justify-content:space-between;gap:3px}
+  .step{
+    width:30px;height:30px;border-radius:8px;border:1.25px solid transparent;
+    background:transparent;color:var(--ink);display:grid;place-items:center;
+    cursor:pointer;transition:background .12s,color .12s;flex:none;
+  }
+  .step:hover{background:var(--ink);color:var(--paper)}
+  .step:disabled{opacity:.22;cursor:default;background:transparent;color:var(--ink)}
+  .step svg{width:12px;height:12px}
+  .cval{
+    width:44px;border:none;background:transparent;text-align:center;
+    font:600 20px var(--mono);color:var(--ink);padding:2px 0;border-radius:6px;
+  }
+  .cval:focus{outline:1.5px solid var(--ink);background:#fff}
+
+  /* boutons ajouter */
+  .adds{display:flex;flex-direction:column;gap:11px;margin-top:14px}
+  .addbtn{
+    display:block;width:100%;text-align:left;
+    border:1.5px solid var(--ink);border-radius:13px;
+    padding:12px 14px 11px;color:#FFF8EC;cursor:pointer;
+    box-shadow:3.5px 4px 0 var(--ink);
+    transition:transform .08s,box-shadow .08s;
+  }
+  .addbtn:hover{transform:translate(-1px,-1px);box-shadow:4.5px 5px 0 var(--ink)}
+  .addbtn:active{transform:translate(3px,4px);box-shadow:.5px .5px 0 var(--ink)}
+  .addbtn .t{display:flex;align-items:center;gap:8px;font:600 16.5px/1 var(--serif);letter-spacing:.01em}
+  .addbtn .t svg{width:15px;height:15px;flex:none}
+  .addbtn .e{display:block;margin-top:5px;font:500 12px var(--mono);opacity:.85}
+  #addF{background:var(--verm)}
+  #addNeg{background:var(--outre)}
+  .pair-note{
+    display:none;margin-top:12px;padding:9px 12px;
+    border:1.25px dashed var(--ink-soft);border-radius:10px;
+    font:italic 400 13px/1.45 var(--serif);
+  }
+  .pair-note.show{display:block}
+
+  /* analyse */
+  .analysis{font:400 12.5px/1.8 var(--mono)}
+  .analysis .k{color:var(--ink-soft);font-weight:600}
+
+  /* légende */
+  .legend{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .leg-item{
+    display:flex;align-items:center;gap:9px;padding:7px 9px;
+    border:1.25px solid var(--line);border-radius:10px;background:var(--paper);
+    transition:border-color .15s,opacity .25s,transform .25s;
+    animation:legin .3s ease;
+  }
+  @keyframes legin{from{opacity:0;transform:translateX(-9px)}}
+  .leg-item:hover{border-color:var(--ink)}
+  .leg-item.removing{opacity:0;transform:translateX(10px)}
+  .leg-swatch{width:18px;height:5px;border-radius:99px;flex:none}
+  .leg-eq{font:500 12px var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .leg-live{font:400 11px var(--mono);color:var(--ink-soft);margin-left:auto;white-space:nowrap;flex:none}
+  .leg-del{
+    flex:none;width:22px;height:22px;border:none;background:transparent;border-radius:6px;
+    display:grid;place-items:center;cursor:pointer;color:var(--ink-soft);transition:background .12s,color .12s;
+  }
+  .leg-del:hover{background:var(--ink);color:var(--paper)}
+  .leg-del svg{width:10px;height:10px}
+  .leg-empty{font:italic 400 13px/1.5 var(--serif);color:var(--ink-soft);padding:6px 2px}
+  .clearall{
+    margin-top:10px;font:400 11px var(--mono);color:var(--ink-soft);
+    background:none;border:none;cursor:pointer;text-decoration:underline dotted;padding:2px;
+  }
+  .clearall:hover{color:var(--ink)}
+
+  /* scène graphique */
+  .stage{position:relative;min-width:0;min-height:0;background:var(--stage)}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+  canvas.dragging{cursor:grabbing}
+  .hint{
+    position:absolute;left:14px;bottom:14px;z-index:5;pointer-events:none;
+    font:400 10.5px var(--mono);color:var(--ink-soft);
+  }
+  .tools{position:absolute;right:14px;bottom:14px;display:flex;gap:8px;z-index:5}
+  .tool{box-shadow:2px 2.5px 0 var(--ink)}
+
+  /* toast */
+  #toast{
+    position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);
+    background:var(--ink);color:var(--paper);font:500 12.5px var(--mono);
+    padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;z-index:80;max-width:90vw;
+  }
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+
+  button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+  @media (max-width:900px){
+    body{overflow:auto}
+    .brand .sub{display:none}
+    .main{display:block;overflow:visible}
+    .panel{border-right:none;border-bottom:1.5px solid var(--ink)}
+    .stage{height:58vh}
+    .hint{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <!-- logo : parabole + note de musique -->
+    <svg viewBox="0 0 36 36" fill="none" aria-hidden="true">
+      <path d="M5 8 Q18 34 31 8" stroke="#292218" stroke-width="2.6" stroke-linecap="round"/>
+      <ellipse cx="24" cy="12.6" rx="3.4" ry="2.5" transform="rotate(-16 24 12.6)" fill="#C8391A"/>
+      <path d="M27.2 12.4 V4.6 c2.9 .5 4.3 2.1 4 4.5" stroke="#C8391A" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <h1>Paraboles <em>&amp;</em> Musique</h1>
+      <span class="sub">f(x) = ax² + bx + c · représentation graphique en musique</span>
+    </div>
+  </div>
+  <div class="top-right">
+    <button id="muteBtn" class="iconbtn" title="Couper / activer le son" aria-label="Couper ou activer le son">
+      <svg class="on" viewBox="0 0 20 20" fill="none"><path d="M3.5 7.5v5h3l4 3.2V4.3l-4 3.2h-3z" fill="currentColor"/><path d="M13.4 7.3a3.8 3.8 0 0 1 0 5.4M15.6 5.3a6.8 6.8 0 0 1 0 9.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <svg class="off" viewBox="0 0 20 20" fill="none"><path d="M3.5 7.5v5h3l4 3.2V4.3l-4 3.2h-3z" fill="currentColor"/><path d="M13.2 7.8l4.2 4.4M17.4 7.8l-4.2 4.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+    <div class="prof">Prof. Warda</div>
+  </div>
+</header>
+
+<main class="main">
+
+  <aside class="panel">
+    <div class="eqs">
+      <div class="eq eq-f" id="eqF"></div>
+      <div class="eq eq-neg" id="eqNeg"></div>
+      <p class="mirror">f(−x) est le symétrique de f(x) par rapport à l’axe des ordonnées.</p>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Coefficients — entiers relatifs</div>
+      <div class="coeffs">
+        <div class="coeff">
+          <span class="clab">a</span>
+          <div class="crow">
+            <button class="step" data-k="a" data-d="-1" aria-label="diminuer a"><svg viewBox="0 0 16 16" fill="none"><path d="M3.2 8h9.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+            <input class="cval" id="in-a" value="1" inputmode="numeric" autocomplete="off" maxlength="3" aria-label="valeur de a">
+            <button class="step" data-k="a" data-d="1" aria-label="augmenter a"><svg viewBox="0 0 16 16" fill="none"><path d="M8 3.2v9.6M3.2 8h9.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+          </div>
+        </div>
+        <div class="coeff">
+          <span class="clab">b</span>
+          <div class="crow">
+            <button class="step" data-k="b" data-d="-1" aria-label="diminuer b"><svg viewBox="0 0 16 16" fill="none"><path d="M3.2 8h9.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+            <input class="cval" id="in-b" value="-3" inputmode="numeric" autocomplete="off" maxlength="4" aria-label="valeur de b">
+            <button class="step" data-k="b" data-d="1" aria-label="augmenter b"><svg viewBox="0 0 16 16" fill="none"><path d="M8 3.2v9.6M3.2 8h9.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+          </div>
+        </div>
+        <div class="coeff">
+          <span class="clab">c</span>
+          <div class="crow">
+            <button class="step" data-k="c" data-d="-1" aria-label="diminuer c"><svg viewBox="0 0 16 16" fill="none"><path d="M3.2 8h9.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+            <input class="cval" id="in-c" value="2" inputmode="numeric" autocomplete="off" maxlength="3" aria-label="valeur de c">
+            <button class="step" data-k="c" data-d="1" aria-label="augmenter c"><svg viewBox="0 0 16 16" fill="none"><path d="M8 3.2v9.6M3.2 8h9.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="adds">
+        <button class="addbtn" id="addF">
+          <span class="t"><svg viewBox="0 0 16 16" fill="none"><path d="M8 3.2v9.6M3.2 8h9.6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Ajouter f(x)</span>
+          <span class="e" id="eqFBtn"></span>
+        </button>
+        <button class="addbtn" id="addNeg">
+          <span class="t"><svg viewBox="0 0 16 16" fill="none"><path d="M8 3.2v9.6M3.2 8h9.6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Ajouter f(−x)</span>
+          <span class="e" id="eqNegBtn"></span>
+        </button>
+      </div>
+
+      <div class="pair-note" id="pairNote">b = 0 ⇒ f est paire : f(−x) = f(x) — les deux courbes coïncident.</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Analyse de f</div>
+      <div class="analysis" id="analysis"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Courbes ajoutées</div>
+      <ul class="legend" id="legend"></ul>
+      <button class="clearall" id="clearAll" hidden>tout supprimer</button>
+    </div>
+  </aside>
+
+  <section class="stage">
+    <canvas id="cv"></canvas>
+    <div class="hint">glisser : déplacer &nbsp;·&nbsp; molette : zoom &nbsp;·&nbsp; double-clic : recentrer</div>
+    <div class="tools">
+      <button class="tool" id="zoomOut" title="Zoom arrière" aria-label="Zoom arrière"><svg viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.4" stroke="currentColor" stroke-width="1.7"/><path d="M13.2 13.2L17 17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M6.8 9h4.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      <button class="tool" id="zoomIn" title="Zoom avant" aria-label="Zoom avant"><svg viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.4" stroke="currentColor" stroke-width="1.7"/><path d="M13.2 13.2L17 17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M9 6.8v4.4M6.8 9h4.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      <button class="tool" id="recenter" title="Recentrer" aria-label="Recentrer le repère"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="4.2" stroke="currentColor" stroke-width="1.6"/><path d="M10 1.5v3M10 15.5v3M1.5 10h3M15.5 10h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+    </div>
+  </section>
+</main>
+
+<div id="toast" role="status"></div>
+
+<script>
+/* ============================================================
+   Paraboles & Musique — f(x) = ax² + bx + c et f(−x)
+   Chaque courbe ajoutée se dessine en jouant sa propre
+   mélodie (gamme pentatonique) : les notes suivent la courbe.
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const cv = $('#cv'), ctx = cv.getContext('2d');
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+const S = {
+  a: 1, b: -3, c: 2,          // entiers relatifs au choix (bornés à ±12)
+  curves: [],                 // courbes ajoutées
+  seq: 0,
+  hover: null,                // abscisse survolée (monde)
+  hot: null,                  // id de courbe mise en avant (légende)
+  view: { cx: 0, cy: 0, unit: 34 },
+  dragging: false,
+  muted: false,
+  pings: [],                  // petites ondes de fin de tracé
+};
+let W = 0, H = 0, dpr = 1, dirty = true, viewInit = false;
+
+/* ---------- formatage ---------- */
+function fmtNum(x, d = 2) {
+  if (!isFinite(x)) return '∞';
+  let s = x.toFixed(d).replace(/\.?0+$/, '');
+  if (s === '-0' || s === '') s = '0';
+  return s.replace('.', ',');
+}
+/* formate ax² + bx + c (html = true → <sup>2</sup>, sinon caractère ²) */
+function fmtPoly(a, b, c, html) {
+  const x2 = html ? 'x<sup>2</sup>' : 'x²';
+  const terms = [];
+  if (a !== 0) terms.push({ coef: a, body: x2 });
+  if (b !== 0) terms.push({ coef: b, body: 'x' });
+  if (c !== 0) terms.push({ coef: c, body: null });
+  if (!terms.length) return '0';
+  let out = '';
+  terms.forEach((t, i) => {
+    const abs = Math.abs(t.coef);
+    const cs = (abs === 1 && t.body) ? '' : String(abs);
+    const body = t.body ? cs + t.body : cs;
+    out += i === 0 ? (t.coef < 0 ? '−' : '') + body
+                   : (t.coef < 0 ? ' − ' : ' + ') + body;
+  });
+  return out;
+}
+
+/* ---------- icônes (légende) ---------- */
+const ICON_X = '<svg viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+/* ============================================================
+   AUDIO — Web Audio : mélodie pentatonique + écho léger
+   ============================================================ */
+let actx = null, master = null, busSend = null;
+function ensureAudio() {
+  if (actx) { if (actx.state === 'suspended') actx.resume(); return; }
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  actx = new AC();
+  master = actx.createGain(); master.gain.value = S.muted ? 0 : 0.9;
+  master.connect(actx.destination);
+  // bus d'écho (delay + feedback)
+  busSend = actx.createGain(); busSend.gain.value = 0.55;
+  const d = actx.createDelay(1); d.delayTime.value = 0.23;
+  const fb = actx.createGain(); fb.gain.value = 0.3;
+  const wet = actx.createGain(); wet.gain.value = 0.22;
+  busSend.connect(d); d.connect(fb); fb.connect(d); d.connect(wet); wet.connect(master);
+}
+function playTone(freq, { type = 'triangle', dur = 0.28, vol = 0.14, echo = 0.5 } = {}) {
+  if (!actx || S.muted) return;
+  const t = actx.currentTime;
+  const osc = actx.createOscillator();
+  osc.type = type; osc.frequency.setValueAtTime(freq, t);
+  const g = actx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.014);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(g); g.connect(master);
+  const gs = actx.createGain(); gs.gain.value = echo;
+  g.connect(gs); gs.connect(busSend);
+  osc.start(t); osc.stop(t + dur + 0.05);
+}
+/* gamme pentatonique mineure de La : La Do Ré Mi Sol */
+const PENTA = [0, 3, 5, 7, 10];
+function noteFreq(i) {
+  i = clamp(Math.round(i), 0, 14);
+  return 220 * Math.pow(2, Math.floor(i / 5) + PENTA[i % 5] / 12);
+}
+/* petit son de stepper : la hauteur suit la valeur du coefficient */
+function tick(v) { playTone(320 * Math.pow(2, v / 18), { type: 'sine', dur: 0.07, vol: 0.07, echo: 0.12 }); }
+
+/* ============================================================
+   CANVAS — repère, grille, courbes
+   ============================================================ */
+const px = x => W / 2 + (x - S.view.cx) * S.view.unit;
+const py = y => H / 2 - (y - S.view.cy) * S.view.unit;
+const wx = sx => S.view.cx + (sx - W / 2) / S.view.unit;
+const wy = sy => S.view.cy - (sy - H / 2) / S.view.unit;
+const baseUnit = () => Math.max(24, Math.min(W, H) / 19);
+
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  const r = cv.getBoundingClientRect();
+  W = r.width; H = r.height;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (!viewInit && W > 0) { S.view.unit = baseUnit(); viewInit = true; }
+  dirty = true;
+}
+
+function niceStep(u) {
+  const raw = 78 / u;
+  const p = Math.pow(10, Math.floor(Math.log10(raw)));
+  for (const m of [1, 2, 5, 10]) if (m * p >= raw) return m * p;
+  return 10 * p;
+}
+function gridLines(sp, style) {
+  ctx.strokeStyle = style; ctx.lineWidth = 1; ctx.beginPath();
+  const x0 = wx(0), x1 = wx(W), yB = wy(H), yT = wy(0);
+  for (let i = Math.ceil(x0 / sp); i * sp <= x1; i++) {
+    const s = Math.round(px(i * sp)) + 0.5; ctx.moveTo(s, 0); ctx.lineTo(s, H);
+  }
+  for (let i = Math.ceil(yB / sp); i * sp <= yT; i++) {
+    const s = Math.round(py(i * sp)) + 0.5; ctx.moveTo(0, s); ctx.lineTo(W, s);
+  }
+  ctx.stroke();
+}
+
+function curveY(c, x) { const B = c.negX ? -c.b : c.b; return c.a * x * x + B * x + c.c; }
+
+function draw(now) {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#FCF8ED'; ctx.fillRect(0, 0, W, H);
+  const u = S.view.unit;
+  const x0 = wx(0), x1 = wx(W), yB = wy(H), yT = wy(0);
+  const step = niceStep(u);
+
+  /* grille */
+  if (step / 5 * u >= 13) gridLines(step / 5, '#F0E8D2');
+  gridLines(step, '#E0D6BD');
+
+  /* axes + flèches */
+  const axOn = 0 >= yB && 0 <= yT, ayOn = 0 >= x0 && 0 <= x1;
+  ctx.strokeStyle = '#292218'; ctx.fillStyle = '#292218'; ctx.lineWidth = 1.5;
+  if (axOn) {
+    const yy = py(0);
+    ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W - 8, yy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W - 2, yy); ctx.lineTo(W - 10, yy - 4.5); ctx.lineTo(W - 10, yy + 4.5); ctx.fill();
+    ctx.font = 'italic 600 13px Fraunces, serif'; ctx.textAlign = 'right';
+    ctx.fillText('x', W - 13, yy - 9);
+  }
+  if (ayOn) {
+    const xx = px(0);
+    ctx.beginPath(); ctx.moveTo(xx, H); ctx.lineTo(xx, 8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(xx, 2); ctx.lineTo(xx - 4.5, 10); ctx.lineTo(xx + 4.5, 10); ctx.fill();
+    ctx.font = 'italic 600 13px Fraunces, serif'; ctx.textAlign = 'left';
+    ctx.fillText('y', xx + 10, 16);
+  }
+
+  /* graduations */
+  ctx.font = '500 10.5px "IBM Plex Mono", monospace';
+  ctx.fillStyle = '#8A7F6C';
+  if (axOn) {
+    const yy = clamp(py(0), 16, H - 6) + 14; ctx.textAlign = 'center';
+    for (let i = Math.ceil(x0 / step); i * step <= x1 + 1e-9; i++) {
+      const v = i * step; if (Math.abs(v) < step * 0.45) continue;
+      const s = px(v); if (s < 16 || s > W - 16) continue;
+      ctx.fillText(fmtNum(v), s, yy);
+    }
+  }
+  if (ayOn) {
+    const xx = clamp(px(0), 34, W - 10) - 8; ctx.textAlign = 'right';
+    for (let i = Math.ceil(yB / step); i * step <= yT + 1e-9; i++) {
+      const v = i * step; if (Math.abs(v) < step * 0.45) continue;
+      const s = py(v); if (s < 12 || s > H - 10) continue;
+      ctx.fillText(fmtNum(v), xx, s + 3.5);
+    }
+    if (axOn) ctx.fillText('0', px(0) - 7, py(0) + 13);
+  }
+
+  /* courbes */
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const c of S.curves) {
+    let r0 = x0, r1 = x1;
+    if (c.anim) { r0 = c.anim.x0; r1 = c.anim.x0 + c.anim.prog * (c.anim.x1 - c.anim.x0); }
+    const dxm = 2 / u;
+    const n = clamp(Math.ceil((r1 - r0) / dxm), 2, 4000);
+    ctx.beginPath();
+    for (let i = 0; i <= n; i++) {
+      const x = r0 + (r1 - r0) * i / n;
+      const y = curveY(c, x);
+      const s = px(x), t = py(y);
+      i === 0 ? ctx.moveTo(s, t) : ctx.lineTo(s, t);
+    }
+    ctx.lineWidth = S.hot === c.id ? 4 : 2.75;
+    ctx.globalAlpha = (S.hot != null && S.hot !== c.id) ? 0.22 : 1;
+    ctx.strokeStyle = c.color;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  /* ondes de fin de tracé */
+  for (const p of S.pings) {
+    const age = (now - p.t0) / 480;
+    if (age >= 1) continue;
+    ctx.beginPath();
+    ctx.arc(px(p.x), py(p.y), 5 + 18 * age, 0, Math.PI * 2);
+    ctx.strokeStyle = p.color; ctx.lineWidth = 2;
+    ctx.globalAlpha = (1 - age) * 0.55;
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+
+  /* survol : droite verticale + valeurs */
+  if (S.hover != null) {
+    const hx = S.hover, sx = px(hx);
+    ctx.save();
+    ctx.setLineDash([5, 5]); ctx.strokeStyle = 'rgba(41,34,24,.4)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke();
+    ctx.restore();
+    ctx.font = '600 11px "IBM Plex Mono", monospace'; ctx.fillStyle = '#292218';
+    const near = sx > W - 80;
+    ctx.textAlign = near ? 'right' : 'left';
+    ctx.fillText('x = ' + fmtNum(hx), near ? sx - 8 : sx + 8, 14);
+    for (const c of S.curves) {
+      const y = curveY(c, hx), sy = py(y);
+      if (sy < -20 || sy > H + 20) continue;
+      ctx.beginPath(); ctx.arc(sx, sy, 4.2, 0, Math.PI * 2);
+      ctx.fillStyle = c.color; ctx.fill();
+      ctx.strokeStyle = '#FCF8ED'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = c.color;
+      ctx.textAlign = near ? 'right' : 'left';
+      ctx.fillText(fmtNum(y), near ? sx - 10 : sx + 10, sy + 4);
+    }
+  }
+}
+
+/* ---------- boucle d'animation ---------- */
+function frame(now) {
+  for (const c of S.curves) {
+    const a = c.anim;
+    if (!a) continue;
+    a.prog = Math.min(1, (now - a.start) / a.dur);
+    while (a.next < a.notes.length && a.prog >= a.notes[a.next].at) {
+      const nt = a.notes[a.next++];
+      const freq = noteFreq(nt.idx) * (c.negX ? 2 : 1);
+      playTone(freq, { type: c.negX ? 'sine' : 'triangle', dur: 0.26, vol: 0.13 });
+    }
+    if (a.prog >= 1) {
+      const lastIdx = a.notes.length ? a.notes[a.notes.length - 1].idx : 7;
+      const f1 = noteFreq(lastIdx) * (c.negX ? 2 : 1);
+      playTone(f1, { type: c.negX ? 'sine' : 'triangle', dur: 0.7, vol: 0.12 });
+      playTone(f1 * 1.5, { type: c.negX ? 'sine' : 'triangle', dur: 0.7, vol: 0.09 });
+      S.pings.push({ x: a.x1, y: curveY(c, a.x1), color: c.color, t0: now });
+      c.anim = null;
+    }
+    dirty = true;
+  }
+  if (S.pings.length) {
+    S.pings = S.pings.filter(p => (now - p.t0) < 480);
+    dirty = true;
+  }
+  if (dirty) { draw(now); dirty = false; }
+  requestAnimationFrame(frame);
+}
+
+/* ============================================================
+   INTERACTIONS GRAPHE : pan, zoom, survol, recentrage
+   ============================================================ */
+let last = null;
+cv.addEventListener('pointerdown', e => {
+  S.dragging = true; last = { x: e.offsetX, y: e.offsetY };
+  cv.setPointerCapture(e.pointerId); cv.classList.add('dragging');
+});
+cv.addEventListener('pointermove', e => {
+  if (S.dragging) {
+    S.view.cx -= (e.offsetX - last.x) / S.view.unit;
+    S.view.cy += (e.offsetY - last.y) / S.view.unit;
+    last = { x: e.offsetX, y: e.offsetY };
+  } else {
+    S.hover = wx(e.offsetX);
+    updateLive();
+  }
+  dirty = true;
+});
+const endDrag = () => { S.dragging = false; cv.classList.remove('dragging'); };
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', endDrag);
+cv.addEventListener('pointerleave', () => {
+  if (!S.dragging) { S.hover = null; updateLive(); dirty = true; }
+});
+
+function zoomAt(sx, sy, f) {
+  const ax = wx(sx), ay = wy(sy);
+  S.view.unit = clamp(S.view.unit * f, 3, 480);
+  S.view.cx = ax - (sx - W / 2) / S.view.unit;
+  S.view.cy = ay + (sy - H / 2) / S.view.unit;
+  dirty = true;
+}
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  zoomAt(e.offsetX, e.offsetY, e.deltaY < 0 ? 1.12 : 1 / 1.12);
+}, { passive: false });
+
+function recenter() {
+  const from = { ...S.view };
+  const to = { cx: 0, cy: 0, unit: baseUnit() };
+  const t0 = performance.now();
+  (function step() {
+    const t = Math.min(1, (performance.now() - t0) / 380);
+    const e = 1 - Math.pow(1 - t, 3);
+    S.view.cx = from.cx + (to.cx - from.cx) * e;
+    S.view.cy = from.cy + (to.cy - from.cy) * e;
+    S.view.unit = from.unit + (to.unit - from.unit) * e;
+    dirty = true;
+    if (t < 1) requestAnimationFrame(step);
+  })();
+}
+cv.addEventListener('dblclick', recenter);
+ $('#zoomIn').addEventListener('click', () => zoomAt(W / 2, H / 2, 1.3));
+ $('#zoomOut').addEventListener('click', () => zoomAt(W / 2, H / 2, 1 / 1.3));
+ $('#recenter').addEventListener('click', recenter);
+
+/* ============================================================
+   AJOUT / SUPPRESSION DES COURBES
+   ============================================================ */
+const HUE_OFF = [0, 20, -16, 34, -30, 46];
+
+function addCurve(negX) {
+  ensureAudio();
+  if (S.curves.length >= 10) { toast('Maximum de 10 courbes atteint — supprimez-en une.'); return; }
+  const count = S.curves.filter(u => u.negX === negX).length;
+  const hue = (negX ? 228 : 13) + HUE_OFF[count % HUE_OFF.length];
+  const color = negX ? `hsl(${hue} 68% 42%)` : `hsl(${hue} 70% 44%)`;
+
+  /* mélodie : 14 notes réparties sur la largeur, hauteur = valeur de y */
+  const xL = wx(0), xR = wx(W), yLo = wy(H), yHi = wy(0);
+  const N = 14, notes = [];
+  for (let i = 0; i < N; i++) {
+    const p = i / (N - 1);
+    const x = xL + p * (xR - xL);
+    const y = curveY({ a: S.a, b: S.b, c: S.c, negX }, x);
+    const frac = clamp((y - yLo) / (yHi - yLo || 1), 0, 1);
+    notes.push({ at: 0.04 + 0.9 * p, idx: Math.round(frac * 14) });
+  }
+  const c = {
+    id: ++S.seq, negX, a: S.a, b: S.b, c: S.c, color,
+    anim: { start: performance.now(), dur: 1400, x0: xL, x1: xR, prog: 0, notes, next: 0 },
+    liveEl: null,
+  };
+  S.curves.push(c);
+  dirty = true;
+  rebuildLegend();
+  $('#legend').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function removeCurve(id) {
+  const li = document.querySelector(`.leg-item[data-id="${id}"]`);
+  if (li) li.classList.add('removing');
+  setTimeout(() => {
+    S.curves = S.curves.filter(c => c.id !== id);
+    if (S.hot === id) S.hot = null;
+    rebuildLegend(); dirty = true;
+  }, 230);
+}
+
+function rebuildLegend() {
+  const legend = $('#legend');
+  legend.innerHTML = '';
+  if (!S.curves.length) {
+    legend.innerHTML = '<li class="leg-empty">Aucune courbe pour l’instant — réglez a, b, c puis ajoutez.</li>';
+  } else {
+    for (const c of S.curves) {
+      const li = document.createElement('li');
+      li.className = 'leg-item'; li.dataset.id = c.id;
+      const B = c.negX ? -c.b : c.b;
+      li.innerHTML =
+        `<span class="leg-swatch" style="background:${c.color}"></span>` +
+        `<span class="leg-eq">f<sub>${c.id}</sub>${c.negX ? '(−x)' : '(x)'} = ${fmtPoly(c.a, B, c.c, false)}</span>` +
+        `<span class="leg-live"></span>` +
+        `<button class="leg-del" aria-label="Supprimer la courbe">${ICON_X}</button>`;
+      li.addEventListener('pointerenter', () => { S.hot = c.id; dirty = true; });
+      li.addEventListener('pointerleave', () => { if (S.hot === c.id) { S.hot = null; dirty = true; } });
+      li.querySelector('.leg-del').addEventListener('click', () => removeCurve(c.id));
+      c.liveEl = li.querySelector('.leg-live');
+      legend.appendChild(li);
+    }
+  }
+  $('#clearAll').hidden = !S.curves.length;
+}
+
+function updateLive() {
+  for (const c of S.curves) {
+    if (!c.liveEl) continue;
+    c.liveEl.textContent = (S.hover == null) ? ''
+      : `(${fmtNum(S.hover)} ; ${fmtNum(curveY(c, S.hover))})`;
+  }
+}
+
+ $('#addF').addEventListener('click', () => addCurve(false));
+ $('#addNeg').addEventListener('click', () => addCurve(true));
+ $('#clearAll').addEventListener('click', () => {
+  S.curves = []; S.hot = null; S.pings = [];
+  rebuildLegend(); dirty = true;
+});
+
+/* ============================================================
+   COEFFICIENTS : steppers + saisie directe
+   ============================================================ */
+const inEls = { a: $('#in-a'), b: $('#in-b'), c: $('#in-c') };
+
+function onCoeffs(skipEl) {
+  for (const k of ['a', 'b', 'c']) {
+    if (inEls[k] !== skipEl) inEls[k].value = String(S[k]);
+  }
+  document.querySelectorAll('.step').forEach(btn => {
+    const k = btn.dataset.k, d = +btn.dataset.d;
+    btn.disabled = (d > 0 && S[k] >= 12) || (d < 0 && S[k] <= -12);
+  });
+  $('#eqF').innerHTML = `<i>f(x)</i> = ${fmtPoly(S.a, S.b, S.c, true)}`;
+  $('#eqNeg').innerHTML = `<i>f(−x)</i> = ${fmtPoly(S.a, -S.b, S.c, true)}`;
+  $('#eqFBtn').textContent = fmtPoly(S.a, S.b, S.c, false);
+  $('#eqNegBtn').textContent = fmtPoly(S.a, -S.b, S.c, false);
+  $('#pairNote').classList.toggle('show', S.b === 0);
+  updateAnalysis();
+}
+
+/* steppers avec appui maintenu = répétition (et glissando de ticks) */
+document.querySelectorAll('.step').forEach(btn => {
+  const k = btn.dataset.k, d = +btn.dataset.d;
+  let holdT = null, holdI = null, suppressClick = false;
+  const press = () => {
+    const v = clamp(S[k] + d, -12, 12);
+    if (v === S[k]) return;
+    S[k] = v; onCoeffs(); tick(S[k]);
+  };
+  btn.addEventListener('pointerdown', () => {
+    press(); suppressClick = true;
+    holdT = setTimeout(() => { holdI = setInterval(press, 85); }, 360);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev =>
+    btn.addEventListener(ev, () => { clearTimeout(holdT); clearInterval(holdI); }));
+  btn.addEventListener('click', () => {
+    if (suppressClick) { suppressClick = false; return; }
+    press(); // clavier (Entrée / Espace)
+  });
+});
+
+/* saisie directe dans la valeur */
+for (const k of ['a', 'b', 'c']) {
+  const el = inEls[k];
+  el.addEventListener('input', () => {
+    const t = el.value;
+    if (/^-?\d{1,2}$/.test(t)) {
+      const v = clamp(parseInt(t, 10), -12, 12);
+      if (v !== S[k]) { S[k] = v; onCoeffs(el); }
+    }
+  });
+  el.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      S[k] = clamp(S[k] + (e.key === 'ArrowUp' ? 1 : -1), -12, 12);
+      onCoeffs(); tick(S[k]);
+    }
+    if (e.key === 'Enter') el.blur();
+  });
+  el.addEventListener('blur', () => onCoeffs());
+}
+
+/* ---------- analyse de f ---------- */
+function updateAnalysis() {
+  const { a, b, c } = S;
+  const L = [];
+  if (a !== 0) {
+    const D = b * b - 4 * a * c;
+    const al = -b / (2 * a), be = a * al * al + b * al + c;
+    L.push(`<div><span class="k">Δ = b² − 4ac</span> = ${D}</div>`);
+    L.push(`<div><span class="k">Sommet</span> S(${fmtNum(al, 3)} ; ${fmtNum(be, 3)})</div>`);
+    if (D > 0) {
+      const r = Math.sqrt(D);
+      L.push(`<div><span class="k">Racines</span> x₁ = ${fmtNum((-b - r) / (2 * a), 3)} · x₂ = ${fmtNum((-b + r) / (2 * a), 3)}</div>`);
+    } else if (D === 0) {
+      L.push(`<div><span class="k">Racine double</span> x₀ = ${fmtNum(-b / (2 * a), 3)}</div>`);
+    } else {
+      L.push(`<div><span class="k">Δ &lt; 0</span> — pas de racine réelle</div>`);
+    }
+  } else if (b !== 0) {
+    L.push(`<div><span class="k">a = 0</span> — fonction affine</div>`);
+    L.push(`<div><span class="k">Pente</span> b = ${fmtNum(b)} · <span class="k">ordonnée à l’origine</span> c = ${fmtNum(c)}</div>`);
+  } else {
+    L.push(`<div><span class="k">a = 0, b = 0</span> — fonction constante y = ${fmtNum(c)}</div>`);
+  }
+  $('#analysis').innerHTML = L.join('');
+}
+
+/* ---------- son coupé / activé ---------- */
+ $('#muteBtn').addEventListener('click', () => {
+  S.muted = !S.muted;
+  $('#muteBtn').classList.toggle('muted', S.muted);
+  ensureAudio();
+  if (actx && master) master.gain.setTargetAtTime(S.muted ? 0 : 0.9, actx.currentTime, 0.03);
+});
+
+/* ---------- toast ---------- */
+let toastT = null;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* ---------- initialisation ---------- */
+window.addEventListener('resize', resize);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { dirty = true; });
+resize();
+onCoeffs();
+rebuildLegend();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
